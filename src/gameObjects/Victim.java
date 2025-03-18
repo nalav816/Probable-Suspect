@@ -74,30 +74,8 @@ public class Victim extends Character implements InteractionListener {
             }
 
             newPos = newPos.scale(1.0 / Game.SCALE);
-            // System.out.println(newPos.getY() + " " + position.getY());
-
-            // System.out.println(!move.getGoal().equals(newPos) + " " + newPos.getX() + " "
-            // + move.getGoal().getX());
-            if (move == null || !move.getGoal().equals(newPos)) {
-                // System.out.println("HERE");
-                double time = newPos.distance(position)/ MOVE_SPEED;
-                if (move == null) {
-                    move = new Interpolation<Vector>((a) -> setPosition((Vector) a), position, newPos,
-                            EasingDirection.NONE, time);
-                    move.play();
-                } else if (!move.getGoal().scale(1.0/Game.SCALE).equals(newPos)) {
-                    move.setNewParams(position, newPos, time);
-                    if(!move.isPlaying()){move.play();}
-                    System.out.println(move.getGoal().getX() + " " + newPos.getX());
-                    
-                }
-
-                // System.out.println("HERE2");
-            }
-
-            // System.out.println("HERE3");
+            setPosition(newPos);
         }
-        // System.out.println("HERE4");
         super.tick();
     }
 
