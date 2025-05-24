@@ -3,6 +3,8 @@
 
   
 Though the lack of a game engine wasn’t ideal for the game’s scope, it has provided the opportunity to engage with and understand technologies often taken for granted, such as collision detection. In addition to those mentioned earlier, this game uses a variety of systems, including but not limited to branching character dialogue, event-driven gameplay, multithreading, and UI interpolation. 
+
+This project is currently a work in progress.
 ## Game Features
 1) 1664 possible unique witnesses.
 2) 3328 possible unique suspects.
