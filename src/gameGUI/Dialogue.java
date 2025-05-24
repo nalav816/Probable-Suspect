@@ -28,7 +28,7 @@ import gameGUI.DialogueBook.Page;
 
 public class Dialogue extends GameImage {
     private final static String CLOSING_INPUT_PROMPT = "...";
-    private final static int TYPE_SPEED = 50; // default 5
+    private final static int TYPE_SPEED = 5; 
     private final static double VERTICAL_TEXT_MARGINS = .12;
     private final static double HORIZONTAL_TEXT_MARGINS = .085;
     private static Dialogue activeDialogue = null;
@@ -127,10 +127,6 @@ public class Dialogue extends GameImage {
         return new JComponent[] { nameLabel, textBox, component };
     }
 
-    /*
-     * @return True if the current page has been completely typed out. False
-     * otherwise.
-     */
     public boolean finished() {
         return progress > 1 + getTextTypeDelta();
     }
@@ -143,9 +139,6 @@ public class Dialogue extends GameImage {
         speaker.deselect();
     }
 
-    /*
-     * Makes the passed text fragment visible on the current page
-     */
     private void setVisibleText() {
         // Typewrite Effect
         // Returns a percentage of the completed page based on the "progress" variable
@@ -180,11 +173,6 @@ public class Dialogue extends GameImage {
         component.repaint();
     }
 
-    /*
-     * Gets text to render based on "progress" variable.
-     * 
-     * @return The text to render.
-     */
     private String getTextToRender() {
         String textToRender = currentPage.getElement();
         textToRender = textToRender.substring(0,
@@ -193,11 +181,6 @@ public class Dialogue extends GameImage {
         return textToRender;
     }
 
-    /*
-     * Calculates change in progress based on text length and type speed.
-     * 
-     * @return The change in text type progress for a given page and type speed.
-     */
     private double getTextTypeDelta() {
         String textToRender = currentPage.getElement();
         return (1 / (double) Game.FRAME_RATE) / ((double) textToRender.length() / (TYPE_SPEED * 10));
@@ -211,7 +194,6 @@ public class Dialogue extends GameImage {
     private void removeResponseButtons() {
         for (int i = 0; i < responseButtons.length; i++) {
             if (responseButtons[i] != null) {
-                // System.out.println("REMOVED!" + System.currentTimeMillis());
                 Game.getActiveGame().remove(responseButtons[i]);
                 responseButtons[i] = null;
             }

@@ -62,6 +62,8 @@ public class Doctor extends Character implements InteractionListener {
                             public void pageClosed() {
                                 Game.getActiveGame().remove(dialogueIndicator);
                                 dialogueIndicator = null;
+                                newDialogueNeeded = true;
+                                dialogueStage = JUST_GAVE_INSTRUCTION_STAGE;
                                 InteractionHandler.fireDocInstructionGiven();
                             }
                         });
@@ -87,10 +89,10 @@ public class Doctor extends Character implements InteractionListener {
                 aa = book.add(a, "Just doing my job.", "Thank you");
                 break;
             case JUST_GAVE_INSTRUCTION_STAGE:
-                book = new DialogueBook("Replace this later.");
+                book = new DialogueBook("Did you drag the body to the ambulance yet? Bring it over here so we can conduct an autopsy.");
                 break;
             case JUST_GAVE_CLUE_STAGE:
-                book = new DialogueBook("Just default line for now figure it out later.");
+                book = new DialogueBook("Replace later.");
                 break;
         }
 

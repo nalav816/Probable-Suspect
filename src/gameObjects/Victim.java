@@ -1,13 +1,10 @@
 package gameObjects;
 
 import gameEvents.interaction.*;
-import gameEvents.interpolation.InterpolationListener;
 import gameGUI.Renderable;
 import gameGUI.GameImage;
 import gameMath.BoundingBox;
 import gameMath.Vector;
-import gameMath.Interpolation;
-import gameMath.interpolationEnums.EasingDirection;
 import gameObjects.CharComponent.ComponentType;
 
 import java.util.HashMap;
@@ -18,10 +15,8 @@ import game.Game;
 import game.Player;
 
 public class Victim extends Character implements InteractionListener {
-    private static final double MOVE_SPEED = 200;
     private static boolean beingDragged = false;
     private Vector defaultPosition, clickOffset;
-    private Interpolation<Vector> move;
     private boolean draggable;
 
     public Victim(int posX, int posY) {
@@ -31,7 +26,6 @@ public class Victim extends Character implements InteractionListener {
         this.defaultPosition = Vector.copy(position);
         // Helps reposition model so that its positioned where the player clicks it
         this.clickOffset = new Vector(0, 0);
-        this.move = null;
         InteractionHandler.addListener(this);
     }
 

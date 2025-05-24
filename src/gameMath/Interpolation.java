@@ -1,13 +1,10 @@
 package gameMath;
 
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.Iterator;
 
 import game.Game;
-import gameGUI.Dialogue;
 import gameEvents.interpolation.InterpolationListener;
 import gameMath.interpolationEnums.EasingDirection;
-import gameMath.interpolationEnums.Property;
 
 public class Interpolation<V> {
     public static Thread interpolationThread = null;

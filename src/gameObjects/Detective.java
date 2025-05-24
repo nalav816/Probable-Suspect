@@ -41,6 +41,7 @@ public class Detective extends Character implements InteractionListener {
     @Override
     public void allCluesCollected() {
         setImportantInfo(null);
+        newDialogueNeeded = true;
         dialogueStage = CONFIRMATION_STAGE;
     }
 

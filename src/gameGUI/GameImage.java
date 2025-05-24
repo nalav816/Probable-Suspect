@@ -14,7 +14,6 @@ import gameMath.Vector;
 import gameObjects.Victim;
 
 import java.awt.image.BufferedImage;
-import java.awt.Point;
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
