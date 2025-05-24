@@ -14,8 +14,13 @@ Though the lack of a game engine wasn’t ideal for the game’s scope, it has p
 2) Run the main method in src/App.java.
 3) Click anywhere on the title screen to start the game.
 ## Roadmap
-1) Finish polishing up the game. Add more interpolation effects, like dialogue indicator bounce.
-2) Add audio.
-3) Finish dialogue lines.
+1) Add more interpolation effects, like dialogue indicator bounce.
+2) Add a hover effect whenever the mouse is over the characters to make the game feel more responsive
+3) Add audio.
+4) Finish dialogue lines.
+5) Recode dialogue indicator logic.
+6) Update dialogue so that file names like "darkBrown" are parsed.
+7) Implement logic for nametags that clip off-screen.
+
 
 
