@@ -25,18 +25,19 @@ public class Witness extends Character {
     public Witness(int posX, int posY) {
         super(posX, posY);
         initModel(null);
-        setDialogueStage(CLUE_GIVING);
         this.persona = Persona.choose();
     }
 
     @Override
-    public void giveClue(){
-        super.giveClue();
+    public void setClue(CharComponent clue){
+        super.setClue(clue);
+        setDialogueStage(CLUE_GIVING);
     }
 
     @Override
     public DialogueBook chooseDialogue() {
         ComponentType clueType = getClue().getType();
+        System.out.println(persona);
         return switch(stage) {
             case CLUE_GIVING -> switch(persona) {
                 case CORDIAL -> {
