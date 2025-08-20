@@ -20,7 +20,6 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 import game.*;
-import gameEvents.dialogue.PageHandler;
 import gameMath.*;
 import gameObjects.Character;
 import gameObjects.Suspect;
@@ -31,6 +30,7 @@ public class Dialogue extends GameImage {
     private final static int TYPE_SPEED = 5; 
     private final static double VERTICAL_TEXT_MARGINS = .12;
     private final static double HORIZONTAL_TEXT_MARGINS = .085;
+    
     private static Dialogue activeDialogue = null;
 
     private Character speaker;
@@ -40,12 +40,12 @@ public class Dialogue extends GameImage {
     private Page currentPage;
     private double progress;
 
-    public Dialogue(Character speaker, DialogueBook dialogue) {
+    public Dialogue(Character speaker, DialogueBook dialogueBook) {
         super("assets/art/ui/dialogue.png", new Vector(26, 70));
         activeDialogue = this;
         this.progress = 0;
         this.speaker = speaker;
-        this.currentPage = dialogue.getFirst();
+        this.currentPage = dialogueBook.getFirst();
         this.textBox = new JTextPane();
         this.nameLabel = new JTextField();
         this.responseButtons = new ResponseButton[2];
@@ -66,19 +66,20 @@ public class Dialogue extends GameImage {
     public void tick() {
         super.tick();
         // Plays any events a page might have when a page is first opened
-        if (progress == 0 && currentPage.hasEvent()) {
-            PageHandler.firePageOpened(currentPage);
-        }
+        if (progress == 0) currentPage.firePageOpen();
 
         if (!finished()) {
             progress += getTextTypeDelta();
             SwingUtilities.invokeLater(() -> setVisibleText());
         } else {
             if (responseButtons[0] == null) {
-                String[] responsePrompts = currentPage.getInputPrompts();
-                if (!currentPage.hasNext()) {
+                String[] responsePrompts;
+                if (!currentPage.hasChoices()) {
                     responsePrompts = new String[] { CLOSING_INPUT_PROMPT };
+                } else {
+                    responsePrompts = currentPage.getChoices();
                 }
+
                 // Positions and spawns responseButtons
                 for (int i = 1; i <= responsePrompts.length; i++) {
                     // The point where the dialogue buttons are positioned around
@@ -99,9 +100,7 @@ public class Dialogue extends GameImage {
 
                 // If the buttons hadn't been made yet then this is the first frame after
                 // typing has finished
-                if (currentPage.hasEvent()) {
-                    PageHandler.firePageTyped(currentPage);
-                }
+                currentPage.firePageTyped();
             }
         }
     }
@@ -143,7 +142,7 @@ public class Dialogue extends GameImage {
         // Typewrite Effect
         // Returns a percentage of the completed page based on the "progress" variable
         String substringToRender = getTextToRender();
-        String completedParagraph = currentPage.getElement();
+        String completedParagraph = currentPage.getText();
         StyledDocument doc = textBox.getStyledDocument();
         SimpleAttributeSet regText = new SimpleAttributeSet();
         SimpleAttributeSet transparentText = new SimpleAttributeSet();
@@ -159,7 +158,7 @@ public class Dialogue extends GameImage {
             doc.insertString(0, substringToRender, regText);
             if (completedParagraph.length() != substringToRender.length()) {
                 doc.insertString(substringToRender.length(),
-                        currentPage.getElement().substring(substringToRender.length()), transparentText);
+                        currentPage.getText().substring(substringToRender.length()), transparentText);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -174,7 +173,7 @@ public class Dialogue extends GameImage {
     }
 
     private String getTextToRender() {
-        String textToRender = currentPage.getElement();
+        String textToRender = currentPage.getText();
         textToRender = textToRender.substring(0,
                 (int) (Math.min(progress, 1) * textToRender.length()));
 
@@ -182,12 +181,12 @@ public class Dialogue extends GameImage {
     }
 
     private double getTextTypeDelta() {
-        String textToRender = currentPage.getElement();
+        String textToRender = currentPage.getText();
         return (1 / (double) Game.FRAME_RATE) / ((double) textToRender.length() / (TYPE_SPEED * 10));
     }
 
     private void flipPage(String input) {
-        currentPage = currentPage.getChild(input);
+        currentPage = currentPage.getPageFromChoice(input);
         progress = 0;
     }
 
@@ -276,17 +275,13 @@ public class Dialogue extends GameImage {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     Page previousPage = currentPage;
-                    if (currentPage.hasNext()) {
+                    if (currentPage.hasChoices()) {
                         flipPage(responsePrompt);
                         removeResponseButtons();
-                        if (previousPage.hasEvent()) {
-                            PageHandler.firePageClosed(previousPage);
-                        }
+                        previousPage.firePageClosed();
                     } else {
                         destroy();
-                        if (previousPage.hasEvent()) {
-                            PageHandler.firePageClosed(previousPage);
-                        }
+                        previousPage.firePageClosed();
                     }
                 }
             });

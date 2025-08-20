@@ -202,7 +202,7 @@ public abstract class Character extends GameObject {
     }
 
     protected DialogueBook chooseDialogue() {
-        DialogueBook newDialogue = new DialogueBook(
+        DialogueBook newDialogue = new DialogueBook(this,
                 "This is the default dialogue string. This should be overriden by the Character class' children.");
         return newDialogue;
     }

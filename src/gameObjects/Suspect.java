@@ -7,7 +7,6 @@ import java.util.Arrays;
 
 import game.Game;
 import game.GameState;
-import gameEvents.dialogue.PageListener;
 import gameGUI.Dialogue;
 import gameGUI.DialogueBook;
 import gameGUI.DialogueBook.Page;
@@ -58,29 +57,4 @@ public class Suspect extends Character {
         }
     }
 
-     @Override
-    public DialogueBook chooseDialogue() {
-        DialogueBook book;
-        Page A, AA, AAA, B;
-        book = new DialogueBook("You have chosen suspect number " + number + ".");
-        A = book.add(book.getFirst(), "Their name is " + features.get(ComponentType.NAME).getVariation().getName() + " and they have a " 
-        + features.get(ComponentType.SKINCOLOR).getVariation().getName() + " skin complexion.");
-        AA = book.add(A, "Additionally, they are wearing a " + features.get(ComponentType.SHIRT).getVariation().getName()
-        + " shirt and " + features.get(ComponentType.SHOES).getVariation().getName() + " shoes.");
-        AAA = book.add(AA, "Lastly, they were found in posession of a " + features.get(ComponentType.MURDERWEAPON).getVariation().getName() + ". Are you confident this is the murderer?");
-        book.add(AAA, "Retrieving suspect number " + number + "..................", "Yes", new PageListener(){
-            @Override
-            public void pageOpened(){
-                Thread newThread = new Thread(() -> {
-                    Game.getActiveGame().startTransitionPhase(3, () -> {
-                        Dialogue.getActiveDialogue().destroy();
-                        Game.getActiveGame().setState(GameState.WINLOSS);});
-                    Game.getActiveGame().endLineupPhase(Suspect.this);
-                });
-                newThread.start();
-            }
-        });
-        book.add(AAA, "Take some more time to consider.", "No");
-        return book;
-    }
 }
