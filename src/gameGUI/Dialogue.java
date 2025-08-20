@@ -27,7 +27,7 @@ import gameGUI.DialogueBook.Page;
 
 public class Dialogue extends GameImage {
     private final static String CLOSING_INPUT_PROMPT = "...";
-    private final static int TYPE_SPEED = 5; 
+    private final static int TYPE_SPEED = 50; 
     private final static double VERTICAL_TEXT_MARGINS = .12;
     private final static double HORIZONTAL_TEXT_MARGINS = .085;
     
@@ -65,7 +65,6 @@ public class Dialogue extends GameImage {
     @Override
     public void tick() {
         super.tick();
-        // Plays any events a page might have when a page is first opened
         if (progress == 0) currentPage.firePageOpen();
 
         if (!finished()) {
@@ -98,8 +97,6 @@ public class Dialogue extends GameImage {
                     Game.getActiveGame().add(responseButtons[i - 1]);
                 }
 
-                // If the buttons hadn't been made yet then this is the first frame after
-                // typing has finished
                 currentPage.firePageTyped();
             }
         }
@@ -280,8 +277,9 @@ public class Dialogue extends GameImage {
                         removeResponseButtons();
                         previousPage.firePageClosed();
                     } else {
-                        destroy();
                         previousPage.firePageClosed();
+                        destroy();
+                        
                     }
                 }
             });

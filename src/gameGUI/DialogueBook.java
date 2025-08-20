@@ -7,20 +7,14 @@ import java.lang.Runnable;
 
 public class DialogueBook {
     private final float MAX_PAGE_CHOICES = 2;
-    private Character speaker;
     private Page root;
 
-    public DialogueBook(Character speaker, String firstPage) {
-        this.speaker = speaker;
+    public DialogueBook(String firstPage) {
         this.root = new Page(firstPage);
     }
 
     public Page getFirst() {
         return root;
-    }
-
-    public Character getSpeaker() {
-        return speaker;
     }
 
     public DialogueBook setBranch(String choiceText, Consumer<Page> pageConsumer){
