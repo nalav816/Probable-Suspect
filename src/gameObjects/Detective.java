@@ -34,7 +34,7 @@ public class Detective extends Character implements InteractionListener {
     @Override
     public void allCluesCollected() {
         setImportantInfo(null);
-        stage = CONFIRMATION;
+        setDialogueStage(CONFIRMATION);
     }
 
     @Override
@@ -53,7 +53,6 @@ public class Detective extends Character implements InteractionListener {
                             page3.setBranch("Will do!", page4 -> {
                                 page4.setText("Come talk to me when your done so we can go identify the suspect.");
                                 page4.setOnPageClosed(() -> {
-                                    removeIndicator = true;
                                     setDialogueStage(INSUFFICIENT_CLUES);
                                     Game.getActiveGame().startInteractionPhase();
                                 });
@@ -69,9 +68,8 @@ public class Detective extends Character implements InteractionListener {
                         SwingWorker<Void, Void> worker = new SwingWorker<Void,Void>(){
                             @Override
                             public Void doInBackground(){
-                                Game.getActiveGame().startTransitionPhase(1.5, () -> {
-                                    Game.getActiveGame().startLineupPhase();
-                                });
+                                Game.getActiveGame().startTransitionPhase(1.5, () -> Game.getActiveGame().setState(GameState.LINEUPPHASE));
+                                Game.getActiveGame().startLineupPhase();
                                 return null;
                             }
                         };

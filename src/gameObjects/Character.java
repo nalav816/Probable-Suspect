@@ -167,6 +167,7 @@ public abstract class Character extends GameObject {
     public void giveClue() {
         Player.getCurrentPlayer().obtainClue(clue);
         clue = null;
+        removeIndicator = true;
     }
 
     public void deselect() {
