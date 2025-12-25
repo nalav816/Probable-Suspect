@@ -19,7 +19,9 @@ public class Suspect extends Character {
         this.number = toString(suspectNumber);
         initModel(generateProperties(accurateProps));
         setDialogueStage(stage);
+        dialogue = chooseDialogue();
     }
+
 
     private HashMap<ComponentType, String> generateProperties(int accurateProps) {
         // Chooses what properties to make accurate
