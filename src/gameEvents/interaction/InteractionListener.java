@@ -1,7 +1,7 @@
 package gameEvents.interaction;
 
 public interface InteractionListener {
-    default void docInstructionGiven(){}
-    default void autopsyConducted(){}
-    default void allCluesCollected(){}
+    public default void docInstructionGiven(){}
+    public default void autopsyConducted(){}
+    public default void allCluesCollected(){}
 }

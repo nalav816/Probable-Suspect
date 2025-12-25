@@ -1,5 +1,7 @@
 package gameObjects;
 
+import static gameObjects.Character.DialogueStage.*;
+
 import java.awt.event.MouseEvent;
 
 import java.util.HashMap;
@@ -13,6 +15,19 @@ import gameMath.Vector;
 import gameObjects.CharComponent.ComponentType;
 
 public abstract class Character extends GameObject {
+    public enum DialogueStage {
+        NULL,
+        INTRODUCTION,
+        AUTOPSY_INSTRUCTION,
+        JUST_GAVE_INSTRUCTION,
+        CLUE_GIVING,
+        JUST_GAVE_CLUE,
+        INSUFFICIENT_CLUES,
+        FED_UP,
+        NON_RESPONDENT,
+        CONFIRMATION
+    }
+
     protected HashMap<ComponentType, CharComponent> features;
     protected GameImage[] model;
     protected NameTag nameTag;
@@ -20,7 +35,8 @@ public abstract class Character extends GameObject {
     protected Vector position;
     protected CharComponent clue;
     protected DialogueBook dialogue;
-    protected boolean selected, hoverToggled, newDialogueNeeded;
+    protected DialogueStage stage;
+    protected boolean selected, hoverToggled, removeIndicator;
 
     public Character(int posX, int posY) {
         this.position = new Vector(posX, posY);
@@ -30,11 +46,12 @@ public abstract class Character extends GameObject {
         this.features = new HashMap<ComponentType, CharComponent>();
         this.model = this instanceof Suspect ? new GameImage[4] : new GameImage[3];
         this.dialogue = null;
-        this.newDialogueNeeded = true;
+        this.stage = NULL;
+        this.removeIndicator = false;
     }
 
     public void initModel(HashMap<ComponentType, String> modelArgs) {
-        if(modelArgs == null){
+        if (modelArgs == null) {
             modelArgs = new HashMap<ComponentType, String>();
             modelArgs.put(ComponentType.NAME, null);
             modelArgs.put(ComponentType.SKINCOLOR, null);
@@ -50,7 +67,7 @@ public abstract class Character extends GameObject {
             CharComponent newComponent = modelArgs.get(type) == null ? new CharComponent(type, charType)
                     : new CharComponent(type, charType, modelArgs.get(type));
             features.put(type, newComponent);
-            // Name does not get added to the model
+
             if (type != ComponentType.NAME && (type != ComponentType.MURDERWEAPON || this instanceof Suspect)) {
                 model[i] = newComponent.createImage(position);
                 model[i].setMouseLogic(new MouseLogic(model[i]) {
@@ -94,7 +111,7 @@ public abstract class Character extends GameObject {
         return features.get(ComponentType.NAME).getVariation().getName();
     }
 
-    public HashMap<ComponentType, CharComponent> getFeatures(){
+    public HashMap<ComponentType, CharComponent> getFeatures() {
         return features;
     }
 
@@ -111,7 +128,7 @@ public abstract class Character extends GameObject {
     }
 
     public int getHeight() {
-        return (int)model[0].getSize().getY();
+        return (int) model[0].getSize().getY();
     }
 
     public CharComponent getClue() {
@@ -150,12 +167,14 @@ public abstract class Character extends GameObject {
     public void giveClue() {
         Player.getCurrentPlayer().obtainClue(clue);
         clue = null;
+        removeIndicator = true;
     }
 
     public void deselect() {
-        if (dialogueIndicator != null && clue == null) {
+        if (removeIndicator) {
             Game.getActiveGame().remove(dialogueIndicator);
             dialogueIndicator = null;
+            removeIndicator = false;
         }
     }
 
@@ -174,22 +193,19 @@ public abstract class Character extends GameObject {
     }
 
     protected void mouseClicked() {
-        if (interactable()){
+        if (interactable()) {
             Game.getActiveGame().remove(nameTag);
             nameTag = null;
-            if (newDialogueNeeded) {
-                newDialogueNeeded = false;
-                dialogue = chooseDialogue();
-            }
             Game.getActiveGame().add(new Dialogue(this, dialogue));
         }
     }
 
-    protected boolean interactable(){
+    protected boolean interactable() {
         GameState state = Game.getActiveGame().getState();
         return Dialogue.getActiveDialogue() == null
-        && (this instanceof Detective || state != GameState.INTRODUCTIONPHASE)
-        && (state == GameState.INTERACTIONPHASE || state == GameState.INTRODUCTIONPHASE || state == GameState.LINEUPPHASE);
+                && (this instanceof Detective || state != GameState.INTRODUCTIONPHASE)
+                && (state == GameState.INTERACTIONPHASE || state == GameState.INTRODUCTIONPHASE
+                        || state == GameState.LINEUPPHASE);
     }
 
     protected boolean mouseTouched() {
@@ -199,6 +215,11 @@ public abstract class Character extends GameObject {
             }
         }
         return false;
+    }
+
+    protected void setDialogueStage(DialogueStage stage){
+        this.stage = stage;
+        this.dialogue = chooseDialogue();
     }
 
     protected DialogueBook chooseDialogue() {

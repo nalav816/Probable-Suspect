@@ -1,114 +1,105 @@
 package gameGUI;
 
 import java.util.LinkedHashMap;
-import gameObjects.Character;
-import gameEvents.dialogue.PageHandler;
-import gameEvents.dialogue.PageListener;
+import java.util.function.Consumer;
+import java.lang.Runnable;
 
 public class DialogueBook {
-    private Page first;
-    private final static String DEFAULT_INPUT_KEY = "...";
+    private final float MAX_PAGE_CHOICES = 2;
+    private Page root;
 
-    public DialogueBook(String firstElement){
-        this.first = new Page(firstElement);
+    public DialogueBook(String firstPage) {
+        this.root = new Page(firstPage);
     }
 
-    public Page add(Page parent, String newString){
-        return add(parent, newString, DEFAULT_INPUT_KEY, null);
+    public Page getFirst() {
+        return root;
     }
 
-    public Page add(Page parent, String newString, String inputKey){
-        return add(parent, newString, inputKey, null);
-    }
-
-    public Page add(Page parent, String newString, String inputKey, PageListener listener){
-        Page newPage = new Page(newString, listener);
-        parent.addChild(inputKey, newPage);
-        return newPage;
-    }
-    
-    public Page getFirst(){
-        return first;
-    }
-
-    public void initializeClueDialogues(Character speaker){
-        updateClueDialogues(first, speaker);
-    }
-
-    private void updateClueDialogues(Page curr, Character speaker){
-        if(curr.elem.contains("INSERTCLUEHERE")){
-            curr.elem = curr.elem.replace("INSERTCLUEHERE", speaker.getClue().getVariation().getName());
-            curr.setListener(new PageListener(){
-                public void pageOpened(){ speaker.giveClue(); }
-            });
-        }
-
-        for(Page n : curr.children.values()){
-            updateClueDialogues(n, speaker);
-        }
+    public DialogueBook setBranch(String choiceText, Consumer<Page> pageConsumer){
+        root.setBranch(choiceText, pageConsumer);
+        return this;
     }
 
     public class Page {
-        private LinkedHashMap<String, Page> children;
-        private String elem;
-        //Represents any functions that may run when this Page is initially acessed by the dialogue object
-        //Open events run when the page represented by this Page is opened
-        //And close events run when it is closed
-        private PageListener listener;
+        private String text;
+        private LinkedHashMap<String, Page> choices;
+        private Runnable pageOpened, pageTyped, pageClosed;
 
-        public Page(){
-            this(null, null);
+        public Page() {
+            this("");
         }
 
-        public Page(String elem){
-            this(elem, null);
+        public Page(String text) {
+            this.text = text;
+            this.choices = new LinkedHashMap<String, Page>();
+            this.pageOpened = () -> {};
+            this.pageTyped = () -> {};
+            this.pageClosed = () -> {};
         }
 
-        public Page(String elem, PageListener listener){
-            this.children = new LinkedHashMap<String, Page>();
-            this.elem = elem;
-            setListener(listener);
+        public String getText() {
+            return text;
         }
 
-        public String getElement(){
-            return elem;
+        public String[] getChoices() {
+            return choices.keySet().toArray(new String[1]);
         }
 
-        public Page getChild(String key){
-            return children.get(key);
+        public boolean hasChoices() {
+            return choices.size() > 0;
         }
 
-        public String[] getInputPrompts(){
-            return children.keySet().toArray(new String[1]);
+        public Page getPageFromChoice(String choice) {
+            return choices.get(choice);
         }
 
-        public boolean branches(){
-            return children.size() > 1;
-        }
-
-        public boolean hasNext(){
-            return children.size() > 0;
-        }
-
-        public boolean hasEvent(){
-            return listener != null;
-        }
-
-        public void addChild(String key, Page child){
-            if(children.size() == 2){
-                System.out.println("Dialogue prompt may only contain two responses");
-                return;
+        public Page setBranch(String choiceText, Consumer<Page> nextPageConsumer){
+            if(choices.size() == MAX_PAGE_CHOICES){
+                throw new DialogueBookException("Page already has " + MAX_PAGE_CHOICES + " choices.");
             }
-            children.put(key, child);
+            Page nextPage = new Page();
+            nextPageConsumer.accept(nextPage);
+            choices.put(choiceText, nextPage);
+            return this;
         }
 
-        public void setListener(PageListener li){
-            if(listener != null){
-                PageHandler.removeListener(this);
-            }
+        public Page setOnPageOpen(Runnable e){
+            pageOpened = e;
+            return this;
+        }
 
-            listener = li;
-            PageHandler.addListener(this, listener);
+        public Page setOnPageTyped(Runnable e){
+            pageTyped = e;
+            return this;
+        }
+
+        public Page setOnPageClosed(Runnable e){
+            pageClosed = e;
+            return this;
+        }
+
+        public Page setText(String text){
+            this.text = text;
+            return this;
+        }
+
+        public void firePageOpen(){
+            pageOpened.run();
+        }
+
+        public void firePageTyped(){
+            pageTyped.run();
+        }
+
+        public void firePageClosed(){
+            pageClosed.run();
+        }
+    }
+
+    public class DialogueBookException extends RuntimeException {
+        public DialogueBookException(String message){
+            super(message);
         }
     }
 }

@@ -1,127 +1,133 @@
 package gameObjects;
 
-import java.util.HashMap;
+import static gameObjects.Character.DialogueStage.*;
+
 import java.util.Random;
 
 import gameGUI.*;
-import gameGUI.DialogueBook.Page;
 import gameObjects.CharComponent.ComponentType;
 
 public class Witness extends Character {
-    // Constances for dialogue stages
-    // Influences what type of dialogue the character could give you
-    private final static int CLUE_GIVING_STAGE = 1;
-    private final static int JUST_GAVE_CLUE_STAGE = 2;
-    private final static int FED_UP_STAGE = 3;
-    private final static int NON_RESPONDENT_STAGE = 4;
+    private enum Persona {
+        CORDIAL;
+        // COOL,
+        // ANNOYED;
 
-    private static boolean dialoguesLoaded = false;
+        public static Persona choose() {
+            Persona[] personas = Persona.values();
+            Random numGen = new Random();
+            return personas[numGen.nextInt(personas.length)];
+        }
+    }
 
-    private int dialogueStage;
+    private Persona persona;
 
     public Witness(int posX, int posY) {
         super(posX, posY);
         initModel(null);
-        this.dialogue = null;
-        this.dialogueStage = CLUE_GIVING_STAGE;
-
-        if (!dialoguesLoaded) {
-            loadDialogues();
-            dialoguesLoaded = true;
-        }
+        this.persona = Persona.choose();
     }
 
     @Override
-    public void giveClue(){
-        super.giveClue();
-        newDialogueNeeded = true;
-        dialogueStage = JUST_GAVE_CLUE_STAGE;
+    public void setClue(CharComponent clue) {
+        super.setClue(clue);
+        setDialogueStage(CLUE_GIVING);
     }
 
     @Override
     public DialogueBook chooseDialogue() {
-        Random numGen = new Random();
-        switch (dialogueStage) {
-            case CLUE_GIVING_STAGE:
-                DialogueBook[] possibilities = clueGivingDialogues.get(clue.getType());
-                DialogueBook chosen = possibilities[numGen.nextInt(possibilities.length)];
-                chosen.initializeClueDialogues(this);
-                return chosen;
-            case JUST_GAVE_CLUE_STAGE:
-                newDialogueNeeded = true;
-                dialogueStage = FED_UP_STAGE;
-                return justGaveClueDialogues[numGen.nextInt(justGaveClueDialogues.length)];
-            case FED_UP_STAGE:
-                newDialogueNeeded = true;
-                dialogueStage = NON_RESPONDENT_STAGE;
-                return fedUpDialogues[numGen.nextInt(fedUpDialogues.length)];
-            case NON_RESPONDENT_STAGE:
-                return nonRespondentDialogues[numGen.nextInt(nonRespondentDialogues.length)];
-            default:
-                return null;
-        }
+        return switch (stage) {
+            case CLUE_GIVING -> {
+                ComponentType clueType = getClue().getType();
+                String clueInfo = clue.getVariation().getNameParsed();
+                yield switch (persona) {
+                    case CORDIAL -> {
+                        if (clueType == ComponentType.SHIRT) {
+                            yield new DialogueBook("Hey detective. Is that guy gonna be okay?")
+                                .setBranch("No, he's dead", page1 -> {
+                                    page1.setText("May he rest in peace. Cruel world we live in.");
+                                    page1.setBranch("You know anything?", page2 -> {
+                                        page2.setText("I saw someone talking to the guy not too long ago. He was wearing a " + clueInfo + " shirt.");
+                                        page2.setBranch("Appreciate it", page3 -> {
+                                            page3.setText("No problem. May justice be served!");
+                                            page3.setOnPageClosed(() -> {
+                                                giveClue();
+                                                setDialogueStage(JUST_GAVE_CLUE);
+                                            });
+                                        });
+                                    });
+                                });
+                        } else if (clueType == ComponentType.SKINCOLOR) {
+                            yield new DialogueBook("Hi detective! How are you doing?")
+                                .setBranch("Good", page1 -> {
+                                    page1.setText("That's good to hear. What can I do for you?");
+                                    page1.setBranch("Tell me what you know", page2 -> {
+                                        page2.setText("I don't know much, but I saw someone running away. He had a " + clueInfo + " skin complexion.");
+                                        page2.setBranch("Thank you", page3 -> {
+                                            page3.setText("No problem. Good luck with your investigation!");
+                                            page3.setOnPageClosed(() -> {
+                                                giveClue();
+                                                setDialogueStage(JUST_GAVE_CLUE);
+                                            });
+                                        });
+                                    });
+                                })
+                                .setBranch("Not great", page1 -> {
+                                    page1.setText("That's unfortunate to hear. Would telling you what I know cheer you up?");
+                                    page1.setBranch("Yeah", page2 -> {
+                                        page2.setText("I don't know much, but I saw someone running away. He had a " + clueInfo + " skin complexion.");
+                                        page2.setBranch("Thank you", page3 -> {
+                                            page3.setText("No worries. Good luck with the rest of your investigation.");
+                                            page3.setOnPageClosed(() -> {
+                                                giveClue();
+                                                setDialogueStage(JUST_GAVE_CLUE);
+                                            });
+                                        });
+                                    });
+                                });
+                        } else if (clueType == ComponentType.SHOES) {
+                            yield new DialogueBook("Good evening sir!")
+                                .setBranch("Be sad. Someone died", page1 -> {
+                                    page1.setText("Apologies sir. I did not mean to undermine the situation.");
+                                    page1.setBranch("What do you know?", page2 -> {
+                                        page2.setText("I saw someone suspicious wearing " + clueInfo + " shoes.");
+                                        page2.setBranch("I see", page3 -> {
+                                            page3.setText("I hope you catch him sir.");
+                                            page3.setOnPageClosed(() -> {
+                                                giveClue();
+                                                setDialogueStage(JUST_GAVE_CLUE);
+                                            });
+                                        });
+                                    });
+                                });
+                        } else {
+                            yield null;
+                        }
+                    }
+                };
+            }
+            case JUST_GAVE_CLUE -> new DialogueBook("You again? I already told you everything I know. Can I go now?")
+                    .setBranch("No", page1 -> {
+                        page1.setText("Ugh.");
+                        page1.setOnPageClosed(() -> {
+                            setDialogueStage(FED_UP);
+                        });
+                    });
+            case FED_UP -> { 
+                yield new DialogueBook("Stop talking to me!")
+                    .setBranch("Why?", page1 -> {
+                        page1.setText("You're annoying!");
+                        page1.setOnPageClosed(() -> {
+                            setDialogueStage(NON_RESPONDENT);
+                        });
+                    });
+            }
+            case NON_RESPONDENT -> new DialogueBook(".....")
+                    .setBranch("Hello?", page1 -> {
+                        page1.setText("..........");
+                    });
+            default -> new DialogueBook("Default text.");
+        };
     }
 
-    /// DIALOGUE LIBRARY ///
-    private static HashMap<ComponentType, DialogueBook[]> clueGivingDialogues = new HashMap<ComponentType, DialogueBook[]>();
-    private static DialogueBook[] skinClueDialogues = new DialogueBook[1];
-    private static DialogueBook[] shirtClueDialogues = new DialogueBook[1];
-    private static DialogueBook[] shoeClueDialogues = new DialogueBook[1];
-    private static DialogueBook[] justGaveClueDialogues = new DialogueBook[1];
-
-    private static DialogueBook[] fedUpDialogues = new DialogueBook[1];
-    private static DialogueBook[] nonRespondentDialogues = new DialogueBook[1];
-
-    private static void loadDialogues() {
-        // Skin Clue Dialogues
-        // 1
-        DialogueBook dbook = new DialogueBook("Hi detective! How are you doing?");
-        Page A = dbook.add(dbook.getFirst(), "That's good to hear. What can I do for you?", "Good");
-        Page AA = dbook.add(A,
-                "I don't know much, but I saw someone running away. He had a INSERTCLUEHERE skin complexion.",
-                "Tell me what you know.");
-        Page AAA = dbook.add(AA, "No problem. Good luck with your investigation!", "Thank you");
-        Page B = dbook.add(dbook.getFirst(), "That's unfortunate to hear. Would telling you what I know cheer you up?",
-                "Not great");
-        Page BA = dbook.add(B,
-                "I don't know much, but I saw someone running away. He had a INSERTCLUEHERE skin complexion.",
-                "Yeah");
-        Page BAA = dbook.add(BA, "No worries. Good luck with the rest of your investigation.", "Thank you");
-        skinClueDialogues[0] = dbook;
-
-        // Shirt Clue Dialogues
-        // 1
-        dbook = new DialogueBook("Leave me alone.");
-        A = dbook.add(dbook.getFirst(), "What do you want?", "No");
-        AA = dbook.add(A, "Fine. I saw the guy you're looking for, he was wearing a INSERTCLUEHERE shirt.", "Information");
-        AAA = dbook.add(AA, "Now go away!", "Appreciate it");
-        B = dbook.add(dbook.getFirst(), "What are you still in my face for?", "Ok");
-        shirtClueDialogues[0] = dbook;
-
-        // Shoe Clue Dialogues
-        // 1
-        dbook = new DialogueBook("Sup?");
-        A = dbook.add(dbook.getFirst(), "I was nearby when it happened. I could only make out the murderer's shoes. They were INSERTCLUEHERE.", "You know anything?");
-        AA = dbook.add(A, "Anytime.", "Thanks");
-        shoeClueDialogues[0] = dbook;
-
-        clueGivingDialogues.put(ComponentType.SKINCOLOR, skinClueDialogues);
-        clueGivingDialogues.put(ComponentType.SHIRT, shirtClueDialogues);
-        clueGivingDialogues.put(ComponentType.SHOES, shoeClueDialogues);
-        //Jut Gave Clue Dialogues
-        //1
-        dbook = new DialogueBook("You again? I already told you everything I know. Can I go now?");
-        A = dbook.add(dbook.getFirst(), "Ugh.", "No");
-        justGaveClueDialogues[0] = dbook;
-
-        //Fed Up Dialogues
-        //1
-        dbook = new DialogueBook("Stop talking to me!");
-        fedUpDialogues[0] = dbook;
-
-        //Non Respondent Dialogues
-        dbook = new DialogueBook(".....");
-        A = dbook.add(dbook.getFirst(), "........", "Hello?");
-        nonRespondentDialogues[0] = dbook;
-    }
 }

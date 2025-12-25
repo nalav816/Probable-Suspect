@@ -254,6 +254,9 @@ public class Game {
         }
     }
 
+    /*
+     * Yields any following code on the thread its called on until it transition screen is half finished
+     */
     public void startTransitionPhase(double speed, TransitionScreen.OnEffectCompletion completionEvent){
         state = GameState.TRANSITION;
         add(new TransitionScreen(speed, () -> {

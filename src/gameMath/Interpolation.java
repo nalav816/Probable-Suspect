@@ -15,7 +15,7 @@ public class Interpolation<V> {
     private EasingDirection direction;
     private V start, goal;
     private double speed, progress;
-    private boolean finished, looped;
+    private boolean finished;
 
     public interface SetterFunction {
         public void set(Object value);
