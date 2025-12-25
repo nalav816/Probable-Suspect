@@ -7,7 +7,6 @@ import java.util.HashMap;
 import game.Game;
 import gameEvents.interaction.*;
 import gameGUI.*;
-import gameGUI.DialogueBook.Page;
 import gameObjects.CharComponent.ComponentType;
 
 public class Doctor extends Character implements InteractionListener {
@@ -75,7 +74,7 @@ public class Doctor extends Character implements InteractionListener {
                         });
                     });
                 });
-            case JUST_GAVE_CLUE -> new DialogueBook("Fill later");
+            case JUST_GAVE_CLUE -> new DialogueBook("Hi again. I don't really have any extra information. Wish I could help more. Sorry.");
             default -> new DialogueBook("Default text");
         };
     }

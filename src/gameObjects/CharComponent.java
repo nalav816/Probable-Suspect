@@ -28,6 +28,10 @@ public class CharComponent {
             return name;
         }
 
+        public String getNameParsed(){
+            return name.replace("_", " ");
+        }
+
         public String getDirectory(){
             return directory;
         }

@@ -1,7 +1,6 @@
 package gameGUI;
 
 import java.util.LinkedHashMap;
-import gameObjects.Character;
 import java.util.function.Consumer;
 import java.lang.Runnable;
 

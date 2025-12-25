@@ -39,7 +39,7 @@ public class Witness extends Character {
         return switch (stage) {
             case CLUE_GIVING -> {
                 ComponentType clueType = getClue().getType();
-                String clueInfo = clue.getVariation().getName();
+                String clueInfo = clue.getVariation().getNameParsed();
                 yield switch (persona) {
                     case CORDIAL -> {
                         if (clueType == ComponentType.SHIRT) {

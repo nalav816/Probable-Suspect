@@ -27,7 +27,7 @@ import gameGUI.DialogueBook.Page;
 
 public class Dialogue extends GameImage {
     private final static String CLOSING_INPUT_PROMPT = "...";
-    private final static int TYPE_SPEED = 50; 
+    private final static int TYPE_SPEED = 5; 
     private final static double VERTICAL_TEXT_MARGINS = .12;
     private final static double HORIZONTAL_TEXT_MARGINS = .085;
     
